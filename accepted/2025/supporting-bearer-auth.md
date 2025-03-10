@@ -1,18 +1,19 @@
 # Supporting Bearer Token Auth for Credential Providers
 
-- Jonatan Gonzalez ([jgonz120](https://github.com/jgonz120)) 
+- Jonatan Gonzalez ([jgonz120](https://github.com/jgonz120))
 - Issue [#12877](https://github.com/NuGet/Home/issues/12877)
 
 ## Summary
-Update the NuGet CLI to allow for bearer token authentication when publishing packages. 
+
+Update the NuGet CLI to allow for bearer token authentication when publishing packages.
 
 ## Motivation
 
 NuGet.org wants to shift to using OIDC authentication for publishing packages, enabling the use of short lived, 15-minute, API keys for authentication.
-This would reduce the security risk of a key leak, since currently the long-lived keys can be valid for up to a year. 
+This would reduce the security risk of a key leak, since currently the long-lived keys can be valid for up to a year.
 
-Currently NuGet.org takes in the API key through the [X-NuGet-ApiKey](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource#request-parameters) header. 
-The CLI for pushing provides a warning if the ApiKey is not specified causing feeds, [like Azure Artifacts](https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/publish?view=azure-devops#publish-packages), to tell users to pass a placeholder value into the command. 
+Currently NuGet.org takes in the API key through the [X-NuGet-ApiKey](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource#request-parameters) header.
+The CLI for pushing provides a warning if the ApiKey is not specified causing feeds, [like Azure Artifacts](https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/publish?view=azure-devops#publish-packages), to tell users to pass a placeholder value into the command.
 
 Additionally due to the [limitation in .NET](https://github.com/dotnet/runtime/issues/91867#issue-1889923702) we can’t send these types of credentials using the HttpClientHandler.
 To circumvent this Azure Artifacts sends their key using basic auth, passing the key as a password in a network credential.
@@ -24,8 +25,7 @@ By working around the .NET limitation for bearer token usage, we can allow a mor
 
 The push command will no longer display a warning when no API key is specified.
 
-When the NuGet client receives an unauthorized response, it will check to see if the response header includes bearer, if it does it’ll retry the request passing the credential as a bearer token in the authentication header. 
-
+When the NuGet client receives an unauthorized response, it will check to see if the response header includes bearer, if it does it’ll retry the request passing the credential as a bearer token in the authentication header.
 
 ### Technical explanation
 
@@ -40,22 +40,23 @@ When deciding which protocol to use for authentication we will use a combination
 If the header indicates the server accepts basic, and GetCredential returns a result for basic, we will use that for the request.
 Similarly, if the header accepts bearer, and GetCredentials returns a result for bearer, we will use that.
 
-To maintain the “PreAuthenticate” functionality, a cache can be used to keep track of URLs and the credential previously used to authenticate against it. 
+To maintain the “PreAuthenticate” functionality, a cache can be used to keep track of URLs and the credential previously used to authenticate against it.
 
 ## Drawbacks
 
-Even though we are moving away from sending the bearer token as a password during the request, the ICredential.GetCredential explicitly returns a NetworkCredential, which requires a username and password. 
+Even though we are moving away from sending the bearer token as a password during the request, the ICredential.GetCredential explicitly returns a NetworkCredential, which requires a username and password.
 
 ## Rationale and alternatives
 
 ### Alt - Use basic Authentication
+
 This option would have NuGet.org implement the credential provider like Azure Artifacts does for authentication.
 The client wouldn’t need to be updated, and the API Key would be sent over to the server using basic authentication.
 The username field would be filled with a placeholder.
 The client could still be updated to no longer require ApiKey.
 While this solution has minimal work for the client, it requires using an authentication mechanism that expects a username and password.
 
-We would need to verify that these changes do not negatively impact feeds which use basic authentication as a workaround. 
+We would need to verify that these changes do not negatively impact feeds which use basic authentication as a workaround.
 
 ## Prior Art
 
