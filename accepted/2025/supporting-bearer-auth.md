@@ -9,7 +9,7 @@ Update the NuGet CLI to allow for bearer token authentication when publishing pa
 
 ## Motivation
 
-NuGet.org wants to shift to using OIDC authentication for publishing packages, enabling the use of short lived, 15-minute, API keys for authentication.
+NuGet.org wants to shift to using bearer token authentication for publishing packages, enabling the use of short lived, 15-minute, API keys for authentication.
 This would reduce the security risk of a key leak, since currently the long-lived keys can be valid for up to a year.
 
 Currently NuGet.org takes in the API key through the [X-NuGet-ApiKey](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource#request-parameters) header.
@@ -32,9 +32,9 @@ When the NuGet client receives an unauthorized response, it will check to see if
 [HttpSourceAuthenticationHandler.SendAsync](https://github.com/NuGet/NuGet.Client/blob/313eecd3af442ee2eeed2e6decf310858934ab21/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs?plain=1#L68) will be updated to check if the previous response contains a WWW-Authenticate: Bearer header.
 If it does, then before sending the request the method will attempt to retrieve the token from the credentials provided and pass them in the authentication header if it’s available.
 
-[GetAuthenticationCredentialsRequest](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsRequest.cs?plain=1#L12C25-L12C60) will be updated to include a new field, AcceptedHeaders, that will tell the credential providers which auth headers can be used.
+[GetAuthenticationCredentialsRequest](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsRequest.cs?plain=1#L12C25-L12C60) will be updated to include a new field, `WwwAuthenticateHeader`, that will tell the credential providers which auth headers can be used.
 This can be used by CredentialProviders to know if they’re communicating with a version of NuGet that supports Bearer tokens.
-If AcceptedHeaders is null, then the version of nuget they are communicating with does not support bearer tokens. Credential providers that want to use bearer auth will return a [GetAuthenticationCredentialsResponse](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsResponse.cs?plain=1#L14C1-L14C61) that has “bearer” in the AuthenticationTypes list.
+If `WwwAuthenticateHeader` is null, then the version of nuget they are communicating with does not support bearer tokens. Credential providers that want to use bearer auth will return a [GetAuthenticationCredentialsResponse](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsResponse.cs?plain=1#L14C1-L14C61) that has “bearer” in the AuthenticationTypes list.
 
 When deciding which protocol to use for authentication we will use a combination of the headers provided and the results from ICredentials.GetCredential.
 If the header indicates the server accepts basic, and GetCredential returns a result for basic, we will use that for the request.
