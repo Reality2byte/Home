@@ -14,6 +14,7 @@ This would reduce the security risk of a key leak, since currently the long-live
 
 Currently NuGet.org takes in the API key through the [X-NuGet-ApiKey](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource#request-parameters) header.
 The CLI for pushing provides a warning if the ApiKey is not specified causing feeds, [like Azure Artifacts](https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/publish?view=azure-devops#publish-packages), to tell users to pass a placeholder value into the command.
+By removing ApiKey as a requirement feeds will no longer have to document sending a placeholder.
 
 Additionally due to the [limitation in .NET](https://github.com/dotnet/runtime/issues/91867#issue-1889923702) we can’t send these types of credentials using the HttpClientHandler.
 To circumvent this Azure Artifacts sends their key using basic auth, passing the key as a password in a network credential.
