@@ -23,9 +23,9 @@ By working around the .NET limitation for bearer token usage, we can allow a mor
 
 ### Functional explanation
 
-The push command will no longer display a warning when no API key is specified.
+The push command will only display the no API key warning when the API key is not specified and we were unable to authenticate with the source.
 
-When the NuGet client receives an unauthorized response, it will check to see if the response header includes bearer, if it does it’ll retry the request passing the credential as a bearer token in the authentication header.
+When the NuGet client receives an unauthorized response, it will pass the `WWW-Authenticate` header to the credential providers. When credential providers return a bearer token, the request will be retried by adding the bearer token to the authentication header.
 
 ### Technical explanation
 
