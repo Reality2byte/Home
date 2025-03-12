@@ -57,7 +57,7 @@ This means that if we continue to use ICredential we will be expecting the beare
 This option would have NuGet.org implement the credential provider like Azure Artifacts does for authentication.
 The client wouldn’t need to be updated, and the API Key would be sent over to the server using basic authentication.
 The client could still be updated to no longer require ApiKey.
-While this solution has minimal work for the client, it requires using an authentication mechanism that expects a username and password.
+While this solution has minimal work for the client, it requires using an authentication mechanism that `HttpClientHandler` supports via `ICredentials`, such as Basic, Digest, Negotiate (Kerberos), NTLM, etc.
 
 ## Prior Art
 
