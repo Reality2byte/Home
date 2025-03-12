@@ -43,8 +43,6 @@ When deciding which auth scheme to use for authentication we will use a combinat
 If the header indicates the server accepts basic, and GetCredential returns a result for basic, we will use that for the request.
 Similarly, if the header accepts bearer, and GetCredentials returns a result for bearer, we will use that.
 
-To maintain the “PreAuthenticate” functionality, a cache can be used to keep track of URLs and the credential previously used to authenticate against it.
-
 ## Drawbacks
 
 Even though we are moving away from sending the bearer token as a password during the request, the ICredential.GetCredential explicitly returns a NetworkCredential, which requires a username and password.
@@ -70,3 +68,5 @@ We would need to verify that these changes do not negatively impact feeds which 
 Encourage .NET to implement [Issue #91867](https://github.com/dotnet/runtime/issues/91867#issue-1889923702), allowing for native support of bearer tokens.
 This would allow us to remove the code required to pass the bearer token in the header and instead let the framework handle it.
 This would require moving NuGet HTTP requests out of the devenv.exe into a service hub process or waiting for devenv.exe to move to .NET core.
+
+To reenable the “PreAuthenticate” functionality, a cache can be used to keep track of URLs and the credential previously used to authenticate against it.
