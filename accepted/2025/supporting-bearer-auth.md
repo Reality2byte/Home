@@ -45,7 +45,8 @@ Similarly, if the header accepts bearer, and GetCredentials returns a result for
 
 ## Drawbacks
 
-Even though we are moving away from sending the bearer token as a password during the request, the ICredential.GetCredential explicitly returns a NetworkCredential, which requires a username and password.
+Even though we are adding support for bearer tokens, the ICredential.GetCredential explicitly returns a NetworkCredential, which requires a username and password.
+This means that if we continue to use ICredential we will be expecting the bearer token in the password field.
 
 ## Rationale and alternatives
 
