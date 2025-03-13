@@ -5,7 +5,7 @@
 
 ## Summary
 
-Update the NuGet CLI to allow for bearer token authentication when publishing packages.
+Update the NuGet authentication flow to allow for bearer token authentication when publishing packages.
 
 ## Motivation
 
