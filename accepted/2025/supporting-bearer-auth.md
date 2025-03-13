@@ -30,8 +30,7 @@ The push command will only display the no API key warning when the API key is no
 
 When the NuGet client receives an unauthorized response, it will pass the `WWW-Authenticate` headers to the credential providers.
 When credential providers return a bearer token, the request will be retried by adding the bearer token to the authentication header.
-When we make a request with an expired token, the server should return a 401 Unauthorized respond, causing a new request for credentials.
-
+When we make a request with an expired token, the server should return a 401 Unauthorized response, causing a new request for credentials.
 ### Technical explanation
 
 [HttpSourceAuthenticationHandler.SendAsync](https://github.com/NuGet/NuGet.Client/blob/313eecd3af442ee2eeed2e6decf310858934ab21/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs?plain=1#L68) will be updated to check if the previous response contains a WWW-Authenticate: Bearer header.
