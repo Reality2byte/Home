@@ -17,7 +17,7 @@ The CLI for pushing provides a warning if the ApiKey is not specified causing fe
 By removing ApiKey as a requirement feeds will no longer have to document sending a placeholder.
 
 Additionally due to a [limitation in .NET](https://github.com/dotnet/runtime/issues/91867#issue-1889923702) HttpClientHandler only automatically sends credentials for Basic, Digest, Negotiate or NTLM auth types.
-The [ICredential](https://learn.microsoft.com/en-us/dotnet/api/system.net.icredentials?view=net-9.0) interface explicitely returns a [NetworkCredential](https://learn.microsoft.com/en-us/dotnet/api/system.net.networkcredential?view=net-9.0) which requires a username and password.
+The [ICredential](https://learn.microsoft.com/en-us/dotnet/api/system.net.icredentials?view=net-9.0) interface explicitly returns a [NetworkCredential](https://learn.microsoft.com/en-us/dotnet/api/system.net.networkcredential?view=net-9.0) which requires a username and password.
 To circumvent this Azure Artifacts sends their key using basic auth, passing the key as a password.
 
 By working around the .NET limitation for bearer token usage, we can allow a more technically correct solution and allow other feeds to implement a credential provider that returns a bearer token for push or get requests.
