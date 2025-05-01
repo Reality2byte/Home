@@ -36,10 +36,12 @@ When we make a request with an expired token, the server should return a 401 Una
 [HttpSourceAuthenticationHandler.SendAsync](https://github.com/NuGet/NuGet.Client/blob/313eecd3af442ee2eeed2e6decf310858934ab21/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs?plain=1#L68) will be updated to check if the previous response contains a WWW-Authenticate: Bearer header.
 If it does, then before sending the request the method will attempt to retrieve the token from the credentials provided and pass them in the authentication header if it’s available.
 
-[GetAuthenticationCredentialsRequest](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsRequest.cs?plain=1#L12C25-L12C60) will be updated to include a new field, `WwwAuthenticateHeaders`, that will tell the credential providers which auth headers can be used.
+[GetAuthenticationCredentialsRequest](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsRequest.cs?plain=1#L12C25-L12C60) will be updated to include a new field, `HttpResponseHeaders ResponseHeaders`, that contains the response headers returned from the source.
 This can be used by Credential Providers to know if they’re communicating with a version of NuGet that supports Bearer tokens.
-If `WwwAuthenticateHeader` is null, then the version of nuget they are communicating with does not support bearer tokens.
+If `ResponseHeaders` is null, then the version of NuGet they are communicating with does not support bearer tokens.
 Credential providers that want to use bearer auth will return a [GetAuthenticationCredentialsResponse](https://github.com/NuGet/NuGet.Client/blob/ab6d3b886b32e9b8f68a7f1b299c43b0c72487dc/src/NuGet.Core/NuGet.Protocol/Plugins/Messages/GetAuthenticationCredentialsResponse.cs?plain=1#L14C1-L14C61) that has “bearer” in the AuthenticationTypes list.
+`GetAuthenticationCredentialsResponse` will also be updated to include `RequestHeaders` which will include any headers needed to authenticate with the end point.
+This will enable the credential provider to provide any custom headers needed.
 
 When deciding which auth scheme to use for authentication we will use a combination of the headers provided and the results from ICredentials.GetCredential.
 If the header indicates the server accepts basic, and GetCredential returns a result for basic, we will use that for the request.
@@ -70,3 +72,8 @@ This would allow us to remove the code required to pass the bearer token in the 
 This would require moving NuGet HTTP requests out of the devenv.exe into a service hub process or waiting for devenv.exe to move to .NET core.
 
 To reenable the “PreAuthenticate” functionality, a cache can be used to keep track of URLs and the credential previously used to authenticate against it.
+
+When we authenticate we do not check if the current credentials have been previously used.
+This can cause a loop where users can retry the same credentials repeatedly, which will be a problem in non-interactive enviroments like CI tools.
+With these changes when the ApiKey will no longer be required which will cause retry on 403 to be true.
+NuGet should keep track of how many times a credential has been attempted for the request and break out of the loop if it's been already used and failed.
